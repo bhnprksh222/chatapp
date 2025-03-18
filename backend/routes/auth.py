@@ -1,104 +1,73 @@
 import uuid
 
-from database.db import db
-from flask import Blueprint, jsonify, request
+from fastapi import APIRouter, HTTPException
 from logger import logger
 from models.users import User
+from pydantic import BaseModel, EmailStr
+from tortoise.transactions import in_transaction
 from werkzeug.security import check_password_hash, generate_password_hash
 
-auth_bp = Blueprint("auth", __name__)
+router = APIRouter()
 
 
-@auth_bp.route("/register", methods=["POST"])
-def register():
-    try:
-        data = request.get_json()
+class RegisterRequest(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    firstname: str
+    lastname: str
 
-        if not data:
-            logger.warning("Registration failed due to invalid input", data)
-            return jsonify({"error": "Invalid input"}), 400
-        logger.info(f"New Registration Attempt: {data['email']}")
 
-        is_user_exists = (
-            db.session.query(User.id).filter_by(username=data["username"]).first()
-            is not None
-        )
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
 
-        logger.warning(f"User already exists: {data['username']}")
-        if is_user_exists:
-            return {
-                "message": "User already exists!",
-                "data": None,
-                "returnCode": 409,
-            }
 
-        hashed_password = generate_password_hash(
-            data["password"], method="pbkdf2:sha256"
-        )
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    new_password: str
 
-        user = User(
+
+@router.post("/register")
+async def register(data: RegisterRequest):
+    existing_user = await User.filter(username=data.username).first()
+    if existing_user:
+        raise HTTPException(status_code=409, detail="User already exists!")
+
+    hashed_password = generate_password_hash(data.password, method="pbkdf2:sha256")
+
+    async with in_transaction():
+        user = await User.create(
             id=uuid.uuid4(),
-            username=data["username"],
-            email=data["email"],
+            username=data.username,
+            email=data.email,
             password_hash=hashed_password,
-            firstname=data["firstname"],
-            lastname=data["lastname"],
+            firstname=data.firstname,
+            lastname=data.lastname,
         )
 
-        db.session.add(user)
-        db.session.commit()
-
-        logger.info(f"User Registered successfully: {data['email']}")
-        return {
-            "message": "Successfully user registered.",
-            "data": data["username"],
-            "returnCode": 201,
-        }
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+    return {"message": "User registered successfully", "username": user.username}
 
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Invalid input"}), 400
-        user = User.query.filter_by(email=data["email"]).first()
+@router.post("/login")
+async def login(data: LoginRequest):
+    user = await User.filter(email=data.email).first()
 
-        if user and check_password_hash(user.password_hash, data["password"]):
-            return {"message": "Login Successful", "data": None, "returnCode": 200}
-        else:
-            return {"message": "Invalid credentials", "data": None, "returnCode": 401}
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+    if not user or not check_password_hash(user.password_hash, data.password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return {"message": "Login Successful"}
 
 
-@auth_bp.route("/reset-password/<uuid:id>", methods=["PATCH"])
-def reset_password(id):
-    try:
-        user = User.query.get(id)
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Invalid input"}), 400
-        user = User.query.filter_by(email=data["email"]).first()
+@router.patch("/reset-password/{user_id}")
+async def reset_password(user_id: uuid.UUID, data: ResetPasswordRequest):
+    user = await User.filter(email=data.email).first()
+    logger.info(f"USER: {user}")
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-        logger.info(f"Resetting Password Attempt: {data['email']}")
-        hashed_password = generate_password_hash(
-            data["new_password"], method="pbkdf2:sha256"
-        )
-        user.password_hash = hashed_password
-        db.session.commit()
-        return {
-            "message": "Password reset Successful.",
-            "data": data["email"],
-            "returnCode": 201,
-        }
+    hashed_password = generate_password_hash(data.new_password, method="pbkdf2:sha256")
+    user.password_hash = hashed_password
+    await user.save()
 
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+    return {"message": "Password reset successful"}

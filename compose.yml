@@ -1,34 +1,17 @@
 services:
-  # NEXTJS
-  # nextapp:
-  #   container_name: nextapp
-  #   image: nextapp:1.0.0
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: next.dockerfile
-  #   ports:
-  #     - 3000:3000
-  #   environment:
-  #     - NEXT_PUBLIC_API_URL=http://localhost:4000
-  #   depends_on:
-  #     - flaskapp
-
-  # FLASK SERVICE
+  # FASTAPI SERVICE
   backend:
     container_name: backend
     build:
       context: ./backend
-      dockerfile: flask.dockerfile
+      dockerfile: fastapi.dockerfile
     ports:
-      - 4000:4000
+      - 8000:8000
     environment:
-      - FLASK_ENV=development
-      - FLASK_APP=/app/app.py
-      - FLASK_RUN_HOST=0.0.0.0
-      - FLASK_RUN_PORT=4000
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+      - FASTAPI_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - PYTHONUNBUFFERED=1
-      - FLASK_DEBUG=1
+      - FASTAPI_DEBUG=1
     depends_on:
       db:
         condition: service_healthy

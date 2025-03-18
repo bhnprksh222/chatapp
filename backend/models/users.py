@@ -1,30 +1,17 @@
 import uuid
 
-from database.db import db
-from logger import logger
-from sqlalchemy.dialects.postgresql import UUID
+from tortoise import fields
+from tortoise.models import Model
 
 
-class User(db.Model):
-    __tablename__ = "users"
+class User(Model):
+    id = fields.UUIDField(pk=True, default=uuid.uuid4, unique=True)
+    username = fields.CharField(max_length=50, unique=True)
+    email = fields.CharField(max_length=100, unique=True)
+    password_hash = fields.CharField(max_length=200)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    firstname = fields.CharField(max_length=100)
+    lastname = fields.CharField(max_length=100)
 
-    id = db.Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid.uuid4,
-        unique=True,
-        nullable=False,
-    )
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    firstname = db.Column(db.String(100), nullable=False)
-    lastname = db.Column(db.String(100), nullable=False)
-
-    def to_dict(self):
-        try:
-            return {"id": self.id, "username": self.username, "email": self.email}
-        except Exception as e:
-            logger.error(f"Error: {e}")
-            return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+    class Meta:
+        table = "users"

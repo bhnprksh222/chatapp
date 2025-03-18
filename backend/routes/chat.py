@@ -1,58 +1,33 @@
-from database.db import db
-from extensions import socketio
-from flask import Blueprint, jsonify, request
-from flask_socketio import emit
-from logger import logger
+import uuid
+
+from fastapi import APIRouter, WebSocket
 from models.messages import Message
+from models.users import User
 
-chat_bp = Blueprint("chat", __name__)
+router = APIRouter()
+
+active_connections = []
 
 
-@socketio.on("message")
-def handle_message(data):
+@router.websocket("/chat/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: uuid.UUID):
+    await websocket.accept()
+    active_connections.append(websocket)
     try:
-        message = Message(
-            sender_id=data["sender_id"],
-            receiver_id=data["receiver_id"],
-            message=data["message"],
-        )
-        db.session.add(message)
-        db.session.commit()
+        while True:
+            data = await websocket.receive_json()
+            sender = await User.filter(id=data["sender_id"]).first()
+            receiver = await User.filter(id=data["receiver_id"]).first()
 
-        emit("message", message.to_dict(), broadcast=True)
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+            if not sender or not receiver:
+                await websocket.send_text("Invalid sender or receiver ID")
+                continue
 
+            message = await Message.create(
+                sender=sender, receiver=receiver, message=data["message"]
+            )
 
-@chat_bp.route("/messages/<int:user_id>", methods=["GET"])
-def get_messages(user_id):
-    try:
-        messages = Message.query.filter(
-            (Message.sender_id == user_id) | (Message.receiver_id == user_id)
-        ).all()
-        return jsonify([msg.to_dict() for msg in messages])
-        return {
-            "message": "Successfully fetched messages",
-            "data": [msg.to_dict() for msg in messages],
-            "returnCode": 200,
-        }
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
-
-
-@chat_bp.route("/send", methods=["POST"])
-def send_message():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Invalid input"}), 400
-
-        message = data.get("message")
-        socketio.emit("message", {"message": message})
-        return {"message": "Message sent", "data": message, "returnCode": 200}
-
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+            for connection in active_connections:
+                await connection.send_json(message.to_dict())
+    except Exception:
+        active_connections.remove(websocket)

@@ -1,17 +1,26 @@
-from flask import Blueprint
+from fastapi import APIRouter, HTTPException
 from logger import logger
 from models.users import User
+from pydantic import BaseModel
 
-users_bp = Blueprint("users", __name__)
+router = APIRouter()
 
 
-@users_bp.route("/all", methods=["GET"])
-def get_all_users():
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    firstname: str
+    lastname: str
+
+
+@router.get("/all", response_model=list[UserResponse])
+async def get_all_users():
     try:
-        users_output = User.query.all()
+        users_output = await User.all()
         users_list = [
             {
-                "id": user.id,
+                "id": str(user.id),
                 "username": user.username,
                 "email": user.email,
                 "firstname": user.firstname,
@@ -19,11 +28,7 @@ def get_all_users():
             }
             for user in users_output
         ]
-        return {
-            "message": "Successfully fetched all users.",
-            "data": users_list,
-            "returnCode": 200,
-        }
+        return users_list
     except Exception as e:
         logger.error(f"Error: {e}")
-        return {"message": f"Error: {e}", "data": None, "returnCode": 500}
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
