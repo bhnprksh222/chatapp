@@ -1,6 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, WebSocket
+from logger import logger
 from models.messages import Message
 from models.users import User
 
@@ -20,6 +21,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: uuid.UUID):
             receiver = await User.filter(id=data["receiver_id"]).first()
 
             if not sender or not receiver:
+                logger.warning("Invalud sender or receiver ID")
                 await websocket.send_text("Invalid sender or receiver ID")
                 continue
 

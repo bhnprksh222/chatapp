@@ -1,7 +1,7 @@
 import os
 
 from database.db import close_db, init_db
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from logger import logger
 from routes.auth import router as auth_router
@@ -28,14 +28,22 @@ app.add_middleware(
 # Database Initialization
 @app.on_event("startup")
 async def startup():
-    await init_db()
-    logger.info("Database initialized successfully.")
+    try:
+        await init_db()
+        logger.info("Database initialized successfully.")
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await close_db()
-    logger.info("Database closed.")
+    try:
+        await close_db()
+        logger.info("Database closed.")
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error: {e}")
 
 
 # Register Routes (Equivalent to Flask Blueprints)

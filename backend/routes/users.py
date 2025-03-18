@@ -28,6 +28,7 @@ async def get_all_users():
             }
             for user in users_output
         ]
+        logger.info(f"Users: {users_list}")
         return users_list
     except Exception as e:
         logger.error(f"Error: {e}")
