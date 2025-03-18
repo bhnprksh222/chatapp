@@ -1,13 +1,24 @@
+import uuid
+
 from database.db import db
 from logger import logger
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class Message(db.Model):
     __tablename__ = "messages"
 
-    id = db.Column(db.Integer, primary_key=True)
-    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    receiver_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    id = db.Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    sender_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
+    receiver_id = db.Column(
+        UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False
+    )
     message = db.Column(db.String(500), nullable=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 

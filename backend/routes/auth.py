@@ -1,3 +1,5 @@
+import uuid
+
 from database.db import db
 from flask import Blueprint, jsonify, request
 from logger import logger
@@ -20,6 +22,7 @@ def register():
             data["password"], method="pbkdf2:sha256"
         )
         user = User(
+            id=uuid.uuid4(),
             username=data["username"],
             email=data["email"],
             password_hash=hashed_password,

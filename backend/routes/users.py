@@ -10,7 +10,14 @@ def get_all_users():
     try:
         users_output = User.query.all()
         users_list = [
-            {"id": user.username, "email": user.email} for user in users_output
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "firstname": user.firstname,
+                "lastname": user.lastname,
+            }
+            for user in users_output
         ]
         return {
             "message": "Successfully fetched all users.",
