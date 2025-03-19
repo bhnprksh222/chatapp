@@ -1,0 +1,6 @@
+@import './styles/globals.scss';
+
+.test {
+  @include font-face('qsand');
+  color: $orange;
+}

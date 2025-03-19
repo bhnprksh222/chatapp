@@ -1,0 +1,59 @@
+@import '../styles/globals.scss';
+
+.container {
+  display: grid; 
+  grid-template-rows: 10rem 1fr;
+  height: 100vh;
+  width: 10rem;
+  background: $black-3;
+
+  .logo {
+    width: 5rem;
+    height: 5rem;
+    grid-row: 1 / 2;
+    place-self: center;
+  }
+
+  & > ul {
+    grid-row: 2 / -1;
+    padding-left: 0;
+    justify-self: center;
+  }
+
+  .li {
+    list-style-type: none;
+    &:not(:last-child) {
+      padding-bottom: .5rem;
+    }
+  }
+
+  .link {
+    color: $white;
+    text-decoration: none;
+    height: 8rem;
+    width: 8rem;
+    border-radius: 1rem;
+
+    @include font-face('qsand', 1.4rem);
+
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background-color: $gray-1;
+    }
+
+
+    .icon {
+      width: 1.4rem;    
+      transform: translateY(1rem);
+    }
+
+    & > p {
+      align-self: top;
+      transform: translateY(-.6rem);
+    }
+  }
+}

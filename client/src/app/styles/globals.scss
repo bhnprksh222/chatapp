@@ -1,0 +1,13 @@
+@import "./sass/variables";
+@import "./sass/typography";
+
+html {
+  font-size: 63.5%;
+}
+
+body {
+  box-sizing: border-box;
+  font-family: "Quicksand", sans-serif;
+  display: flex;
+}
+
