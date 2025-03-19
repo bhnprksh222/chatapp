@@ -6,7 +6,7 @@ import { Home, MessageCircle, Settings } from "lucide-react";
 const Navbar = () => {
   return (
     <div className={styles.container}>
-      <Link href="/" className={styles.logo}>LOGO</Link>
+      <Link href="/" className={styles.logo}>Wavey</Link>
       <ul>
         <li className={styles.li}> 
           <Link className={styles.link} href="/home">

@@ -1,6 +1,6 @@
-@import './styles/globals.scss';
+@use '../app/styles/sass/index' as *;
 
 .test {
-  @include font-face('qsand');
+  @include font-face('qsand', 10rem);
   color: $orange;
 }

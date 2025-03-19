@@ -1,5 +1,4 @@
-@import "./sass/variables";
-@import "./sass/typography";
+@use "./sass/index" as *;
 
 html {
   font-size: 63.5%;

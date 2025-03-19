@@ -1,4 +1,4 @@
-@import '../styles/globals.scss';
+@use '../styles/sass/index' as *;
 
 .container {
   display: grid; 
@@ -8,10 +8,12 @@
   background: $black-3;
 
   .logo {
-    width: 5rem;
-    height: 5rem;
     grid-row: 1 / 2;
     place-self: center;
+    @include font-face('qsand', 2rem);
+    text-decoration: none;
+    color: $white;
+    text-align: center;
   }
 
   & > ul {
