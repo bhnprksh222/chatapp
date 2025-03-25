@@ -1,25 +1,51 @@
+"use client";
+
 import Link from 'next/link'
 import styles from '@/app/components/Navbar.module.scss'
-import { Home, MessageCircle, Settings } from "lucide-react";
+import { Bell, MessageCircle, Settings, Search } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
+interface ILinkInfo {
+  href: string,
+  icon: LucideIcon 
+}
 
 const Navbar = () => {
+  const path = usePathname();
+  const links_info: ILinkInfo[] = [
+    {
+      href: '/chats',
+      icon: MessageCircle
+    },
+    {
+      href: '/search',
+      icon: Search
+    },
+    {
+      href: '/notifications',
+      icon: Bell
+    },
+    {
+      href: '/options',
+      icon: Settings
+    },
+  ]
+  
   return (
     <div className={styles.container}>
-      <Link href="/" className={styles.logo}>Wavey</Link>
       <ul>
-        <li className={styles.li}> 
-          <Link className={styles.link} href="/home">
-            <MessageCircle className={styles.icon}/>
-            <p>All Chats</p>
-          </Link>
-        </li>
-        <li className={styles.li}> 
-          <Link className={styles.link} href="/">
-            <Settings className={styles.icon} />
-            <p>Settings</p>
-          </Link>
-        </li>
+        {
+          links_info.map(({ href, icon: Icon }, index) => {
+          const isActive = path === href;
+          return (
+            <li key={index} className={isActive ? styles.activeli : styles.li}>
+              <Link href={href} className={isActive ? styles.active : styles.link}>
+                <Icon className={isActive ? styles.iconActive : styles.icon} />
+              </Link>
+            </li>
+          )})
+        }
       </ul> 
     </div>
   )

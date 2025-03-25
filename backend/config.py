@@ -2,25 +2,25 @@ import os
 
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 
-class Config:
+class BaseConfig:
     """Base configuration with default settings."""
 
-    SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
-    CORS_HEADERS = "Content-Type"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey")
+    ALGORITHM: str = os.getenv("ALGORITHM", "HS256")
+    CORS_HEADERS: str = "Content-Type"
 
 
-class DevelopmentConfig(Config):
-    """Configuration for Development."""
+class DevelopmentConfig(BaseConfig):
+    """Development configuration."""
 
-    DEBUG = True
-    DATABASE_URL = os.getenv("DATABASE_URL")
+    DEBUG: bool = True
+    DATABASE_URL: str = os.getenv("DATABASE_URL")
 
 
-# Select the configuration based on the environment
+# Select the configuration based on FASTAPI_ENV
 configurations = {
     "development": DevelopmentConfig,
 }

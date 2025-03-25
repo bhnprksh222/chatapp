@@ -1,35 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from logger import logger
-from models.users import User
-from pydantic import BaseModel
+from models.user import User
+from schemas.user import UserOut, UserSearchResult
+from utils.auth import get_current_user
 
 router = APIRouter()
 
 
-class UserResponse(BaseModel):
-    id: str
-    username: str
-    email: str
-    firstname: str
-    lastname: str
-
-
-@router.get("/all", response_model=list[UserResponse])
+@router.get("/all", response_model=list[UserSearchResult])
 async def get_all_users():
     try:
-        users_output = await User.all()
-        users_list = [
-            {
-                "id": str(user.id),
-                "username": user.username,
-                "email": user.email,
-                "firstname": user.firstname,
-                "lastname": user.lastname,
-            }
-            for user in users_output
-        ]
-        logger.info(f"Users: {users_list}")
-        return users_list
+        users = await User.all()
+        return [UserSearchResult.from_orm(user) for user in users]
     except Exception as e:
-        logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        logger.error(f"Fetch users failed: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching users")
+
+
+@router.get("/me", response_model=UserOut)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return await UserOut.from_tortoise_orm(current_user)

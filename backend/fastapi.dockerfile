@@ -12,6 +12,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all backend files
 COPY . ./
 
+# Copy ENV file
+COPY .env .env
+
 # Expose the FastAPI application port
 EXPOSE 8000
 
@@ -19,7 +22,8 @@ EXPOSE 8000
 ENV FASTAPI_ENV=development
 ENV DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
 ENV FASTAPI_DEBUG=1
+ENV PYTHONUNBUFFERED=1
 
 # Run FastAPI application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["hypercorn", "app:app", "--bind", "0.0.0.0:8000", "--reload"]
 

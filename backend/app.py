@@ -1,17 +1,19 @@
 import os
 
 from database.db import close_db, init_db
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from logger import logger
 from routes.auth import router as auth_router
-from routes.chat import router as chat_router
+from routes.friends import router as friends_router
+from routes.notifications import router as notifications_router
 from routes.users import router as users_router
+from websockets.chat import chat_endpoint
 
 # FastAPI App
 app = FastAPI(
     title="ChatApp",
-    description="A real-time chat application using FastAPI",
+    description="A real-time chat application",
     version="1.0.0",
 )
 
@@ -23,6 +25,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.websocket("/ws/chat")
+async def websocket_chat(websocket: WebSocket, token: str):
+    await chat_endpoint(websocket, token)
 
 
 # Database Initialization
@@ -47,9 +54,12 @@ async def shutdown():
 
 
 # Register Routes (Equivalent to Flask Blueprints)
-app.include_router(auth_router, prefix="/auth")
-app.include_router(chat_router, prefix="/chat")
-app.include_router(users_router, prefix="/users")
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(friends_router, prefix="/friends", tags=["Friends"])
+app.include_router(
+    notifications_router, prefix="/notifications", tags=["Notifications"]
+)
 
 # Run FastAPI Server
 if __name__ == "__main__":

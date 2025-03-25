@@ -1,96 +1,37 @@
-import uuid
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from logger import logger
-from models.users import User
-from pydantic import BaseModel, EmailStr
-from tortoise.transactions import in_transaction
-from werkzeug.security import check_password_hash, generate_password_hash
+from models.user import User
+from schemas.auth import Token
+from schemas.user import UserCreate, UserOut
+from utils.auth import create_access_token, get_password_hash, verify_password
 
 router = APIRouter()
 
 
-class RegisterRequest(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-    firstname: str
-    lastname: str
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class ResetPasswordRequest(BaseModel):
-    email: EmailStr
-    new_password: str
-
-
-@router.post("/register")
-async def register(data: RegisterRequest):
+@router.post("/signup", response_model=UserOut)
+async def signup(user: UserCreate):
     try:
-        existing_user = await User.filter(username=data.username).first()
+        existing_user = await User.get_or_none(email=user.email)
         if existing_user:
-            logger.warning(f"User already exists: {existing_user.username}")
-            raise HTTPException(status_code=409, detail="User already exists!")
-
-        logger.info(f"New User Registration attempt: {data.username}")
-        hashed_password = generate_password_hash(data.password, method="pbkdf2:sha256")
-
-        async with in_transaction():
-            user = await User.create(
-                id=uuid.uuid4(),
-                username=data.username,
-                email=data.email,
-                password_hash=hashed_password,
-                firstname=data.firstname,
-                lastname=data.lastname,
-            )
-        logger.info(f"User registered successfully: {user.username}")
-        return {"message": "User registered successfully", "username": user.username}
-
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
-
-
-@router.post("/login")
-async def login(data: LoginRequest):
-    try:
-        user = await User.filter(email=data.email).first()
-
-        logger.info(f"Login Attempt: {data.email}")
-        if not user or not check_password_hash(user.password_hash, data.password):
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-
-        logger.info(f"Login successful: {data.email}")
-        return {"message": "Login Successful"}
-
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
-
-
-@router.patch("/reset-password/{user_id}")
-async def reset_password(user_id: uuid.UUID, data: ResetPasswordRequest):
-    try:
-        logger.info(f"Password reset attempt: {data.email}")
-        user = await User.filter(id=user_id).first()
-
-        if not user:
-            logger.warning(f"User not found: {data.email}")
-            raise HTTPException(status_code=404, detail="User not found")
-
-        hashed_password = generate_password_hash(
-            data.new_password, method="pbkdf2:sha256"
+            raise HTTPException(status_code=409, detail="User already exists")
+        user_obj = await User.create(
+            username=user.username,
+            email=user.email,
+            firstname=user.firstname,
+            lastname=user.lastname,
+            password_hash=get_password_hash(user.password),
         )
-        user.password_hash = hashed_password
-        await user.save()
-
-        logger.info(f"Password reset successful: {user.email}")
-        return {"message": "Password reset successful"}
+        return await UserOut.from_tortoise_orm(user_obj)
     except Exception as e:
-        logger.error(f"Error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {e}")
+        logger.error(f"Signup error: {e}")
+        raise HTTPException(status_code=500, detail="Signup failed")
+
+
+@router.post("/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await User.get_or_none(email=form_data.username)
+    if not user or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token({"sub": str(user.id)})
+    return {"access_token": token, "token_type": "bearer"}
