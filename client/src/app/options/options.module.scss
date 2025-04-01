@@ -1,0 +1,9 @@
+@use '../styles/sass/index' as *;
+
+.page {
+  @include page-style();
+}
+
+.title {
+  @include title-style();
+}

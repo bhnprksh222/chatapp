@@ -1,14 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from logger import logger
-from models.user import User
-from schemas.auth import Token
-from schemas.user import UserCreate, UserOut
-from utils.auth import create_access_token, get_password_hash, verify_password
+from fastapi import APIRouter
 
 router = APIRouter()
 
-
+"""
 @router.post("/signup", response_model=UserOut)
 async def signup(user: UserCreate):
     try:
@@ -35,3 +29,25 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
+
+
+class GoogleUserSchema(BaseModel):
+    name: str
+    email: EmailStr
+    image: str
+
+
+@router.post("/google")
+async def google_auth(user: GoogleUserSchema):
+    existing_user = await User.get_or_none(email=user.email)
+    if existing_user:
+        return {"message": "User already exists."}
+    await User.create(
+        username=user.email.split("@")[0],
+        email=user.email,
+        firstname=user.name.split()[0],
+        lastname=user.name.split()[-1],
+        profile_picture=user.image,
+    )
+    return {"message": "User created or exists."}
+"""

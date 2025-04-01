@@ -1,6 +1,12 @@
+import styles from './options.module.scss'
+
 const Options = () => {
   return (
-    <div>Options</div>
+    <div className={styles.page}>
+      <div className={styles.title}>Settings</div>
+      {
+      }
+    </div>
   )
 }
 

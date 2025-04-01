@@ -12,4 +12,4 @@ class FriendRequest(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = "FriendRequest"
+        table = "friend_request"

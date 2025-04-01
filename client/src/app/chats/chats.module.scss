@@ -1,65 +1,10 @@
 @use '../styles/sass/index' as *;
 
-.chats {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 2rem;
+.page {
+  @include page-style();
+}
 
-  .title {
-    color: $almond;
-    @include font-face('qsand', 4rem, 700);
-    padding-bottom: 1rem;
-  }
-  
-   
+.title {
+  @include title-style();
+}
 
-  .chat {
-    display: flex;
-    justify-content: space-between;;
-    align-items: center;
-    padding: 1.5rem;
-    border-radius: 1rem;
-
-    &:active,
-    &:hover {
-      cursor: pointer;
-      background: $rich-black;
-    }
-    
-    &Image {
-      display: flex;
-
-      & > img {
-        width: 4rem;
-        height: 4rem;
-        border-radius: 50%;
-      }
-      justify-items: center;
-    }
-
-    &Info {
-      width: 85%;
-
-      &Top {
-        display: flex;  
-        justify-content: space-between;
-
-        &Name {
-          color: $almond;
-          @include font-face('qsand', 1.75rem, 500);
-        }
-
-        &Time {
-          color: $almond;
-          @include font-face('qsand', 1.5rem, 100);
-        }
-      }
-
-      &Message {
-        color: $almond;  
-        @include font-face('qsand', 1.25rem);
-      }
-    }
-  }
- } 

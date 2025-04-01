@@ -22,4 +22,4 @@ class User(Model):
     )
 
     class Meta:
-        table = "User"
+        table = "user"

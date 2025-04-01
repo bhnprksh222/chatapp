@@ -13,4 +13,4 @@ class Notification(Model):
     timestamp = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
-        table = "Notification"
+        table = "notification"

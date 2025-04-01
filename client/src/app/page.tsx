@@ -1,9 +1,18 @@
-import styles from  "@/app/page.module.scss";
+import SignIn from "@/app/components/SignIn/SignIn";
+import styles from  "./page.module.scss";
 
-export default function Home() {
+const Home = () => {
   return (
     <div>
-        <p className={styles.test}>hello world</p>
+        {/*
+          TODO:
+          Add logic to display logo when page loads
+          once logged in should display some greeting text
+        */}
+        <p className={styles.test}>WAVEY</p>
+        <SignIn />
     </div>
-  );
+  )
 }
+
+export default Home

@@ -1,0 +1,7 @@
+@use '../../styles/sass/index' as *;
+
+.h1 {
+  @include font-face('qsand', 1.4rem);
+  color: $almond; 
+}
+

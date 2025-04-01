@@ -5,10 +5,22 @@
 @mixin font-face($family, $size: 1.6rem, $weight: normal, $style: normal) {
 	@if $family == 'qsand' {
 		font-family: "Quicksand", sans-serif;
-	/* } @else if $family == 'Cabin'{ */
-		/* font-family: 'Cabin', monospace; */
 	}
 	font-weight: $weight;
 	font-style: $style;
 	font-size: $size;
 }
+
+@mixin page-style() {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 2rem;
+}
+
+@mixin title-style() {
+	color: variables.$almond;
+	@include font-face('qsand', 4rem, 700);
+	padding-bottom: 1rem;
+}
+

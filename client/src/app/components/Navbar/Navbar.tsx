@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link'
-import styles from '@/app/components/Navbar.module.scss'
+import styles from './Navbar.module.scss'
 import { Bell, MessageCircle, Settings, Search } from "lucide-react";
 import type { LucideIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';

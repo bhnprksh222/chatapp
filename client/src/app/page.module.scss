@@ -1,4 +1,4 @@
-@use '../app/styles/sass/index' as *;
+@use '@/app/styles/sass/index' as *;
 
 .test {
   @include font-face('qsand', 10rem);

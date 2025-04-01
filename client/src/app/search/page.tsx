@@ -1,9 +1,14 @@
+import styles from './search.module.scss'
+
 const Search = () => {
   return (
-    <div>Search</div>
+    <div className={styles.page}>
+      <div className={styles.title}>Search</div>
+      {
+      }
+    </div>
   )
 }
 
-export default Search
-
+export default Search 
 

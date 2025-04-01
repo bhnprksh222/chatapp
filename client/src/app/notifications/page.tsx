@@ -1,7 +1,14 @@
-const Notifcations = () => {
+import styles from './notifications.module.scss'
+
+const Notifications = () => {
   return (
-    <div>Notifcations</div>
+    <div className={styles.page}>
+      <div className={styles.title}>Notifications</div>
+      {
+      }
+    </div>
   )
 }
 
-export default Notifcations
+export default Notifications 
+
